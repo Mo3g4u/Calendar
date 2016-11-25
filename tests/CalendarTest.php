@@ -14,15 +14,15 @@ class CalendarTest extends PHPUnit_Framework_TestCase
     public function testRawDates201611()
     {
         $calendar = new Calendar(2016, 11);
-        $raw = $calendar->getRawDates();
+        $raw = $calendar->rawDates();
         $this->assertEquals(35, count($raw));
     }
 
     public function testGetTwoDimensionalArray201611()
     {
         $calendar = new Calendar(2016, 11);
-        $array = $calendar->getTwoDimensionalArray();
-        var_dump($array);
+        $array = $calendar->rawDatesChunk();
+        $this->assertEquals(5, count($array));
     }
 
 

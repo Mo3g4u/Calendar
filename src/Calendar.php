@@ -12,9 +12,21 @@ namespace Mo3g4u\Calendar;
 class Calendar
 {
 
+    /**
+     * @var int
+     */
     private $year = 0;
+    /**
+     * @var int
+     */
     private $month = 0;
+    /**
+     * @var int
+     */
     private $startDow = 0; // 0 sun -> 6 sat
+    /**
+     * @var array
+     */
     private $days = [];
 
     /**
@@ -41,6 +53,12 @@ class Calendar
         return $this->startDow;
     }
 
+    /**
+     * Calendar constructor.
+     * @param int $year
+     * @param int $month
+     * @param int $startDow
+     */
     public function __construct($year = 0, $month = 0, $startDow = 0)
     {
         $this->year = $year;
@@ -50,18 +68,27 @@ class Calendar
         $this->create();
     }
 
-    public function getRawDates()
+    /**
+     * @return array
+     */
+    public function rawDates()
     {
         return $this->days;
     }
 
-    public function getTwoDimensionalArray()
+    /**
+     * @param int $separate
+     * @return array
+     */
+    public function rawDatesChunk($separate = 7)
     {
-        return array_chunk($this->days, 7);
+        return array_chunk($this->days, $separate);
     }
 
 
-
+    /**
+     *
+     */
     private function create()
     {
         $firstDay = new \DateTime();
@@ -72,6 +99,10 @@ class Calendar
         $this->addAfterMonthDate($days);
     }
 
+    /**
+     * @param $firstDay
+     * @return bool
+     */
     private function addBeforeMonthDate($firstDay)
     {
         if($firstDay->format('w') == $this->startDow){
@@ -89,6 +120,9 @@ class Calendar
         }
     }
 
+    /**
+     * @param $days
+     */
     private function addCurrentMonthDate($days)
     {
         for($i = 1; $i <= $days; $i++){
@@ -98,6 +132,10 @@ class Calendar
         }
     }
 
+    /**
+     * @param $days
+     * @return bool
+     */
     private function addAfterMonthDate($days)
     {
         $lastDow = $this->startDow - 1;
@@ -121,6 +159,9 @@ class Calendar
         }
     }
 
+    /**
+     *
+     */
     private function defaultSet()
     {
         $date = new \DateTime();
