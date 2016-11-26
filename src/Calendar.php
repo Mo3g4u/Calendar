@@ -53,11 +53,12 @@ class Calendar
         return $this->startDow;
     }
 
+
     /**
      * Calendar constructor.
      * @param int $year
      * @param int $month
-     * @param int $startDow  default = sun
+     * @param int $startDow
      */
     public function __construct($year = 0, $month = 0, $startDow = 0)
     {
@@ -65,9 +66,12 @@ class Calendar
         $this->month = $month;
         $this->startDow = $startDow;
         $this->defaultSet();
-
-        // Todo エラーチェック
-
+        try {
+            $this->dateCheck($this->year, $this->month);
+        } catch (\RuntimeException $e) {
+            echo "Error:" . $e->getMessage();
+            exit();
+        }
         $this->create();
     }
 
@@ -80,12 +84,30 @@ class Calendar
     }
 
     /**
+     * @return array
+     */
+    public function dates()
+    {
+        return $this->toArray($this->days);
+    }
+
+    /**
      * @param int $separate
      * @return array
      */
     public function rawDatesChunk($separate = 7)
     {
         return array_chunk($this->days, $separate);
+    }
+
+    /**
+     * @param int $separete
+     * @return array
+     */
+    public function datesChunk($separete = 7)
+    {
+        $dates = $this->dates();
+        return array_chunk($dates, $separete);
     }
 
     /**
@@ -102,6 +124,18 @@ class Calendar
         return $data[$n -1];
     }
 
+
+    /**
+     * @param int $n
+     * @param int $separate
+     * @return array
+     */
+    public function datesNthWeek($n = 0, $separate = 7)
+    {
+        $dateTimes = $this->rawDatesNthWeek($n, $separate);
+        return $this->toArray($dateTimes);
+    }
+
     /**
      * @param int $dow
      * @return array
@@ -115,6 +149,16 @@ class Calendar
             }
         }
         return $dates;
+    }
+
+    /**
+     * @param int $dow
+     * @return array
+     */
+    public function specifyDow($dow = 0)
+    {
+        $dateTimes = $this->rawSpecifyDow($dow);
+        return $this->toArray($dateTimes);
     }
 
     /**
@@ -134,6 +178,22 @@ class Calendar
         return false;
     }
 
+    /**
+     * @param int $nth
+     * @param int $dow
+     * @param int $separate
+     * @return array
+     */
+    public function nthDow($nth = 1, $dow = 0, $separate = 7)
+    {
+        $day = $this->rawNthDow($nth, $dow, $separate);
+        return [
+            'year' => $day->format('Y'),
+            'month' => $day->format('m'),
+            'day' => $day->format('d'),
+            'dow' => $day->format('w')
+        ];
+    }
 
     /**
      *
@@ -222,6 +282,38 @@ class Calendar
         if($this->month === 0){
             $this->month = $date->format('m');
         }
+    }
+
+    /**
+     * @param $year
+     * @param $month
+     * @throws \RuntimeException
+     */
+    private function dateCheck($year, $month)
+    {
+        $day = 1;
+        if(!checkdate($month, $day, $year)){
+            throw new \RuntimeException("checkdate error");
+        }
+    }
+
+    /**
+     * @param $dateTimes
+     * @return array
+     */
+    private function toArray($dateTimes)
+    {
+        $dates = [];
+        foreach ($dateTimes as $day){
+            $tmp = [
+                'year' => $day->format('Y'),
+                'month' => $day->format('m'),
+                'day' => $day->format('d'),
+                'dow' => $day->format('w')
+            ];
+            $dates[] = $tmp;
+        }
+        return $dates;
     }
 
 }
