@@ -57,7 +57,7 @@ class Calendar
      * Calendar constructor.
      * @param int $year
      * @param int $month
-     * @param int $startDow
+     * @param int $startDow  default = sun
      */
     public function __construct($year = 0, $month = 0, $startDow = 0)
     {
@@ -65,6 +65,9 @@ class Calendar
         $this->month = $month;
         $this->startDow = $startDow;
         $this->defaultSet();
+
+        // Todo エラーチェック
+
         $this->create();
     }
 
@@ -85,6 +88,52 @@ class Calendar
         return array_chunk($this->days, $separate);
     }
 
+    /**
+     * @param int $n
+     * @param int $separate
+     * @return array
+     */
+    public function rawDatesNthWeek($n = 0, $separate = 7)
+    {
+        $data = array_chunk($this->days, $separate);
+        if(!isset($data[$n - 1])){
+            return [];
+        }
+        return $data[$n -1];
+    }
+
+    /**
+     * @param int $dow
+     * @return array
+     */
+    public function rawSpecifyDow($dow = 0)
+    {
+        $dates = [];
+        foreach ($this->days as $day) {
+            if($day->format('w') == $dow){
+                $dates[] = $day;
+            }
+        }
+        return $dates;
+    }
+
+    /**
+     * @param int $nth
+     * @param int $dow
+     * @param int $separate
+     * @return bool|mixed
+     */
+    public function rawNthDow($nth = 1, $dow = 0, $separate = 7)
+    {
+        $array = $this->rawDatesNthWeek($nth, $separate);
+        foreach ($array as $day){
+            if($day->format('w') == $dow){
+                return $day;
+            }
+        }
+        return false;
+    }
+
 
     /**
      *
@@ -94,30 +143,32 @@ class Calendar
         $firstDay = new \DateTime();
         $firstDay->setDate($this->year, $this->month, 1);
         $days = $firstDay->format('t');
-        $this->addBeforeMonthDate($firstDay); // 1日より前
+        $this->addLastMonthDate($firstDay); // 1日より前
         $this->addCurrentMonthDate($days); // 当月
-        $this->addAfterMonthDate($days);
+        $this->addNextMonthDate($days);
     }
 
     /**
      * @param $firstDay
      * @return bool
      */
-    private function addBeforeMonthDate($firstDay)
+    private function addLastMonthDate($firstDay)
     {
         if($firstDay->format('w') == $this->startDow){
             return true;
         }
+        $prevDates = [];
         $count = 1;
         while (1){
             $tmpDate = clone $firstDay;
             $tmpDate->modify('-' . $count . ' day');
-            $this->days[] = $tmpDate;
+            $prevDates[] = $tmpDate;
             if($tmpDate->format('w') == $this->startDow){
                 break;
             }
             $count++;
         }
+        $this->days = array_reverse($prevDates);
     }
 
     /**
@@ -136,7 +187,7 @@ class Calendar
      * @param $days
      * @return bool
      */
-    private function addAfterMonthDate($days)
+    private function addNextMonthDate($days)
     {
         $lastDow = $this->startDow - 1;
         if($lastDow < 0){
